@@ -36,24 +36,15 @@ class Orbit {
 // Point objects carries minimal information so they can be generated quickly (only String value)
 class Point {
 
-	// @param: value            = String or Fraction that represents point
-	//		   rotationalNumber = Integer that represents sigma of orbit this point belongs to, required if value is a Fraction
-	constructor(value, sigma = -1) {
+	// @param: string            = String that represents point
+	constructor(string, sigma = -1) {
 
-		if (typeof (value) == String) {
-
-			this.string = value;
-
-		} else {
-
-			this.string = Point.convertFractionToString(value, sigma);
-
-		}
+		this.string = string;
 
 	}
 
-	// Convert Fraction value to String value
-	static convertFractionToString(fraction, sigma) {
+	// Convert Fraction value to Point
+	static convertFractionToPoint(fraction, sigma) {
 
 		if (sigma < 1) {
 
@@ -88,7 +79,7 @@ class Point {
         // to get desired string length
         let convertedToBaseSigma = numerator.toString(sigma);
 
-        return "0".repeat(stringLength - convertedToBaseSigma.length) + convertedToBaseSigma;
+        return new Point("0".repeat(stringLength - convertedToBaseSigma.length) + convertedToBaseSigma);
 
 	}
 
@@ -127,7 +118,7 @@ class Fraction {
 
     constructor(numerator, denominator) {
 
-        let gcd = findGcd(numerator, denominator);
+        let gcd = Fraction.findGcd(numerator, denominator);
 
         this.numerator = numerator / gcd;
 		this.denominator = denominator / gcd;

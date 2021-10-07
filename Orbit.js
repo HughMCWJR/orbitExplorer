@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 class Orbit {
 
     constructor(numerator) {
@@ -27,10 +26,3 @@ class Fraction {
     }
 
 }
-=======
-class Orbit {
-    constructor () {
-
-    }
-}
->>>>>>> Stashed changes

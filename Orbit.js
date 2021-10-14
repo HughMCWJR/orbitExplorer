@@ -354,6 +354,7 @@ class Fraction {
 
         if (this.denominator != otherFraction.denominator) {
 
+            console.log(this.toString() + "and" + otherFraction.toString());
             throw "Comparing fractions in different standard form";
 
         }
@@ -374,7 +375,7 @@ class Fraction {
 
         }
 
-        let distance = new Fraction(this.numerator - otherFraction.numerator, this.denominator);
+        let distance = new Fraction(otherFraction.numerator - this.numerator, this.denominator);
 
         return Fraction.mod(distance);
 

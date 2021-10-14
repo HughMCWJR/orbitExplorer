@@ -22,15 +22,11 @@ class Orbit {
 
         }
 
-        alert("sigma: " + this.sigma.toString());
-
         // Fraction values for points with smallest fraction first
         this.fractions = this.#findFractions(point, this.sigma);
 
         // Smallest point in orbit
         this.point = Point.convertFractionToPoint(this.fractions[0], this.sigma);
-
-        alert("lowest fraction: " + this.fractions[0].toString());
 
         // If given rotational number, assume orbit is rotational
         // If not test if rotational then assign rotational number
@@ -227,7 +223,7 @@ class Orbit {
 class Point {
 
 	// @param: String string            = String that represents point
-	constructor(string, sigma = -1) {
+	constructor(string) {
 
 		this.string = string;
 

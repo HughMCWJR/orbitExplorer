@@ -4,10 +4,24 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <script src="Orbit.js"></script>
-    <script src="test.js"></script>
+    <script type="text/javascript" src="Orbit.js"></script>
+    <script type="text/javascript" src="test.js"></script>
+    <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
-
+    <p>Generate Orbit Attributes</p>
+    <p>Sigma:</p>
+    <input type="text" id="sigma"><br><br>
+    <p>Point or Fraction</p>
+	<input type="text" id="orbitInput"><br><br>
+    <button onclick="generateOrbitAttributes()">Generate</button>
+    <p>Smallest point:</p>
+    <p id="smallestPoint"></p><br><br>
+    <p>Smallest fraction:</p>
+    <p id="smallestFraction"></p><br><br>
+    <p>Rotational:</p>
+    <p id="rotational"></p><br><br>
+    <p>Rotational Number:</p>
+    <p id="rotationalNumber"></p><br><br>
 </body>
 </html>

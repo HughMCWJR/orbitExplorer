@@ -1,17 +1,13 @@
 function generateOrbitAttributes() {
 
-    let orbit;
+    let orbitSet;
 
     // Set if sigma is set
     let sigma = document.getElementById("sigma").value.match(/\d+/);
 
-    if (sigma != null) {
+    if (sigma) {
 
         sigma = parseInt(sigma[0]);
-
-    } else {
-
-        sigma = -1;
 
     }
 
@@ -38,7 +34,7 @@ function generateOrbitAttributes() {
         denominator = parseInt(denominator.substring(1));
 
         // Set orbit from fraction
-        orbit = new Orbit(Point.convertFractionToPoint(new Fraction(numerator, denominator), sigma), sigma);
+        orbitSet = OrbitSet.generateOrbitSet([Point.convertFractionToPoint(new Fraction(numerator, denominator).string, sigma)], sigma);
 
     } else {
 
@@ -48,18 +44,8 @@ function generateOrbitAttributes() {
         // If neither fraction nor point is in orbit alert user and return
         if (stringPoint != null) {
 
-            // Use sigma if able
-            if (sigma != null) {
-
-                // Set orbit from point
-                orbit = new Orbit(new Point(stringPoint), sigma);
-
-            } else {
-
-                // Set orbit from point
-                orbit = new Orbit(new Point(stringPoint));
-
-            }
+            // Set orbit from point
+            orbitSet = OrbitSet.generateOrbitSet([stringPoint], sigma);
 
         } else {
 
@@ -70,10 +56,9 @@ function generateOrbitAttributes() {
 
     }
 
-    // Display attributes of orbit
-    document.getElementById("smallestPoint").innerHTML = orbit.point.string;
-    document.getElementById("smallestFraction").innerHTML = orbit.fractions[0].toString();
-    document.getElementById("rotational").innerHTML = orbit.rotational;
-    document.getElementById("rotationalNumber").innerHTML = orbit.rotational ? orbit.rotationalNumber : "DNE";
+    document.getElementById("smallestPoint").innerHTML = orbitSet.orbits[0].point.string;
+    document.getElementById("smallestFraction").innerHTML = orbitSet.orbits[0].fractions[0].toString();
+    document.getElementById("rotational").innerHTML = orbitSet.rotational;
+    document.getElementById("rotationalNumber").innerHTML = orbitSet.rotational ? orbitSet.rotationalNumber : "DNE";
 
 }

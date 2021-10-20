@@ -2,45 +2,32 @@
 class Orbit {
 
 	// @param:    Point point               = Point in the orbit (can be any of the points)
-    //            int sigma                 = Sigma of orbit
-	//            Fraction rotationalNumber = Fraction that represents rotational number of orbit
+    //            int sigma                 = Sigma of orbit, if not given assume lowest
 	// @assigned: Point point               = Smallest point in orbit
     //            Point[] fractions         = Fractions for points in orbit, assigned in order of rotation (starts with smallest)
-    //            int sigma                 = Sigma of orbit, if not given assume lowest
-    //            Fraction rotationalNumber = Fraction that represents rotational number of orbit
-    //            bool rotational           = If orbit is rotational or not
-	constructor(point, sigma = -1, rotationalNumber = null) {
-
+	constructor(point, sigma = null) {
+        
         // If sigma is given, assign it. Otherwise assume smallest possible given the point
-        if (sigma > 1) {
+        if (!sigma) {
 
-            this.sigma = sigma;
-
-        } else {
-
-            this.sigma = point.findLowestSigma();
+            sigma = point.findLowestSigma();
 
         }
 
         // Fraction values for points with smallest fraction first
-        this.fractions = this.#findFractions(point, this.sigma);
+        this.fractions = this.#findFractions(point, sigma);
 
         // Smallest point in orbit
-        this.point = Point.convertFractionToPoint(this.fractions[0], this.sigma);
+        this.point = Point.convertFractionToPoint(this.fractions[0], sigma);
 
-        // If given rotational number, assume orbit is rotational
-        // If not test if rotational then assign rotational number
-        if (rotationalNumber) {
-            
-            this.rotational = true;
-            this.rotationalNumber = rotationalNumber;
+    }
 
-        } else {
+    // Reassigns sigma of orbit
+    // @param: int sigma = new sigma to be assigned
+    reassignSigma(sigma) {
 
-            this.rotational = this.#checkRotational();
-            this.rotationalNumber = this.rotational ? this.#findRotationalNumber() : null;
-
-        }
+        // Fraction values for points with smallest fraction first
+        this.fractions = this.#findFractions(this.point, sigma);
 
     }
 
@@ -72,121 +59,18 @@ class Orbit {
 
     }
 
-    // Checks if orbit is rotational
-    // Requires orbit to have point, sigma, and fractions assigned
-    // @returm: Bool if fraction is rotational
-    #checkRotational() {
-
-        // Each critical length between fixed points is represented by an array in this array
-        // Each array is assigned such that [min Fraction in this digit, max Fraction]
-        let digitGaps = [];
-
-        for (let i = 0; i < this.sigma; i++) {
-
-            digitGaps.push([]);
-
-        }
-
-        // Go through each fraction and see if it changes range of points
-        // in each digit gap
-        for (let i = 0; i < this.fractions.length; i++) {
-
-            // Digit gap this fraction lies in
-            let digit = parseInt(this.point.string.slice(i, i + 1));
-
-            // If digit gap has no points so far, just put point in as max and min of range
-            // Otherwise check if new point changes min or max of range
-            if (digitGaps[digit].length == 0) {
-
-                digitGaps[digit].push(this.fractions[i]);
-                digitGaps[digit].push(this.fractions[i]);
-
-            } else {
-
-                if (this.fractions[i].compareTo(digitGaps[digit][0]) < 0) {
-
-                    digitGaps[digit][0] = this.fractions[i];
-
-                } else if (this.fractions[i].compareTo(digitGaps[digit][1]) > 0) {
-
-                    digitGaps[digit][1] = this.fractions[i];
-
-                }
-
-            }
-
-        }
-
-        // Critical length
-        const criticalLength = new Fraction(this.fractions[0].denominator / this.sigma, this.fractions[0].denominator);
-
-        // Number of empty critical lengths counted
-        let criticalLengths = 0;
-
-        // Counts number of skipped digits so they can remove from difference calculations
-        let skippedDigits = 0;
-
-        // Last fraction seen in a non-empty digit for finding distance and checking
-        // if greater than critical length
-        let lastFraction = null;
-
-        // Finds last non-empty digit to assign last fraction for finding distance from that to first fraction
-        for (let i = 0; i < digitGaps.length; i++) {
-
-            if (digitGaps[digitGaps.length - 1 - i].length != 0) {
-
-                lastFraction = digitGaps[digitGaps.length - 1 - i][1];
-                break;
-
-            } else {
-
-                skippedDigits++;
-
-            }
-
-        }
-
-        // Counts number of empty critical lengths
-        for (let i = 0; i < digitGaps.length; i++) {
-
-            if (digitGaps[i].length == 0) {
-
-                criticalLengths++;
-                skippedDigits++;
-
-            } else {
-
-                // Found critical length if distance between min of this digit and 
-                // max of last found is greater than critical length
-                if (Fraction.multiply(criticalLength, skippedDigits).distanceTo(lastFraction.distanceTo(digitGaps[i][0])).compareTo(criticalLength) >= 0) {
-
-                    criticalLengths++;
-
-                }
-
-                lastFraction = digitGaps[i][1];
-
-                skippedDigits = 0;
-
-            }
-
-        }
-
-        return criticalLengths >= this.sigma - 1 ? true : false;
-
-    }
-
     // Find rotational number
     // Requires orbit to have fractions assigned
+    // @param:  orbit
     // @returm: Fraction rotational number
-    #findRotationalNumber() {
+    static findRotationalNumber(orbit) {
 
         // Special cases for rotational number
-        if (this.fractions.length == 1) {
+        if (orbit.fractions.length == 1) {
 
             return new Fraction(1, 1);
 
-        } else if (this.fractions.length == 0) {
+        } else if (orbit.fractions.length == 0) {
 
             throw "No fractions given for finding rotational number";
 
@@ -195,15 +79,15 @@ class Orbit {
         // Numerator for rotational number is how many points are jumped
         // each rotation, found here by seeing how far second point jumped
         // by seeing how many fractions are less than it
-        let secondFraction = this.fractions[1];
+        let secondFraction = orbit.fractions[1];
 
         // We already know first fraction is less because first fraction is smallest fraction
         let numberFractionsLess = 1;
 
         // Do not need to look at first or second fraction because they are already accounted for
-        for (let i = 2; i < this.fractions.length; i++) {
+        for (let i = 2; i < orbit.fractions.length; i++) {
 
-            if (this.fractions[i].compareTo(secondFraction) < 0) {
+            if (orbit.fractions[i].compareTo(secondFraction) < 0) {
 
                 numberFractionsLess++;
 
@@ -213,7 +97,7 @@ class Orbit {
 
         // Assign rotational number such that numerator is number of points jumped + 1
         // and denominator is period (fractions) length of orbit
-        return new Fraction(numberFractionsLess, this.fractions.length);
+        return new Fraction(numberFractionsLess, orbit.fractions.length);
 
     }
 

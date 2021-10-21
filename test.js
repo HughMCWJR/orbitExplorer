@@ -8,10 +8,16 @@ for (let i = 0; i < orbitPoints.length; i++) {
 }
 */
 
-let orbitsPoints = ['2335234234234', '2335235234234', '2336335234234'];
+//let orbitsPoints = ['2335234234234', '2335235234234', '2336335234234'];
 
-let orbitSet = OrbitSet.generateOrbitSet(orbitsPoints);
+//let orbitSetTest = OrbitSet.generateOrbitSet(orbitsPoints);
 
-console.log(orbitSet.sigma);
-console.log(orbitSet.rotational);
-console.log(orbitSet.rotational ? orbitSet.rotationalNumber.toString() : "DNE");
+//console.log(orbitSetTest.sigma);
+//console.log(orbitSetTest.rotational);
+//console.log(orbitSetTest.rotational ? orbitSetTest.rotationalNumber.toString() : "DNE");
+
+let orbits = Orbit.generateOrbitsByAttributes(7, new Fraction(1, 5));
+
+for (let i = 0; i < orbits.length; i++) {
+    console.log(orbits[i].point.string);
+}

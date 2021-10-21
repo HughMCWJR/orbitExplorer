@@ -6,7 +6,7 @@ class Orbit {
 	// @assigned: Point point               = Smallest point in orbit
     //            Point[] fractions         = Fractions for points in orbit, assigned in order of rotation (starts with smallest)
 	constructor(point, sigma = null) {
-        
+
         // If sigma is given, assign it. Otherwise assume smallest possible given the point
         if (!sigma) {
 
@@ -101,6 +101,188 @@ class Orbit {
 
     }
 
+    // Generate orbits with given attributes
+    // Uses algorithm where cursor is moved along a "seed" orbit point
+    // generating rotational orbit points with same attributes
+    // Cursor is moved by a jump value, jump value is the
+    // numerator of the rotational number for the first "seed"
+    // Then use new generated points to make more orbit points
+    // @param:  int sigma
+    //          Fraction rotNumber = rotational number wanted for orbits
+    // @return: Orbit[] list of orbit sets that have given attributes
+    static generateOrbitsByAttributes(sigma, rotNumber) {
+
+        // Points of orbits to be returned
+        let orbitPoints = [];
+
+        // Digits of original seed point to make more seeds
+        // Needs to be reordered to be rotational
+        let digits = "0".repeat(rotNumber.denominator - rotNumber.numerator) + "1".repeat(rotNumber.denominator);
+
+        // Cursor to be moved along original seed orbit
+        // to find more orbits
+        let cursor = 0;
+
+        // Check if rotational number's numerator
+        // and denominator are relatively prime
+        // If not throw error
+        if (rotNumber.numerator != 1 && !rotNumber.isSimplified()) {
+            throw "Rotational number is not simplified for finding orbits";
+        }
+
+        // Generate first seed orbit point
+        let firstOrbitPointString = "";
+
+        for (let i = 0; i < rotNumber.denominator; i++) {
+
+            firstOrbitPointString = firstOrbitPointString + digits.substring(cursor, cursor + 1);
+
+            cursor += rotNumber.numerator;
+
+            // Check if cursor is out of bounds, fix it if so
+            if (cursor >= rotNumber.denominator) {
+                cursor -= rotNumber.denominator;
+            }
+
+        }
+
+        orbitPoints.push(new Point(firstOrbitPointString));
+
+        // Find jump value that creates new orbits
+        let jump = null;
+
+        for (let i = 0; i < rotNumber.denominator; i++) {
+
+            if (orbitPoints[0].string.substring(i, i + 1) == "1") {
+
+                let newOrbitPoint = new Point(orbitPoints[0].string);
+                
+                newOrbitPoint.increaseDigit(i);
+
+                // Check if generated orbit is rotational
+                // If so, jump and has been found
+                if (OrbitSet.generateOrbitSet([newOrbitPoint.string], sigma).rotational) {
+
+                    jump = i;
+                    break;
+
+                }
+
+            }
+
+        }
+
+        // If jump is not found throw error
+        if (!jump){
+            throw "Jump not found for finding orbits";
+        }
+
+        // If requested sigma is 2 then done
+        if (sigma == 2) {
+
+            return [new Orbit(orbitPoints[0])];
+
+        } else {
+
+            // Organize points in 2d list of groups
+            // Groups are made to avoid repeat generation
+            // of orbit points
+            // In each group, you iterate with jump
+            // (period - i) times where i is the index
+            // of the point in the current group
+            // 2d array so loop knows which groups
+            // were made in last iteration (avoids repeats)
+            let lastGroups = [[]];
+
+            // Create starter seed based on period (rotational number denominator)
+            let point = new Point(orbitPoints[0].string);
+            cursor = jump;
+            
+            for (let i = 0; i < rotNumber.denominator; i++) {
+
+                point.increaseDigit(cursor);
+
+                // Move cursor
+                cursor += jump;
+                if (cursor >= rotNumber.denominator) {
+                    cursor -= rotNumber.denominator;
+                }
+
+                lastGroups[0].push(new Point(point.string));
+                orbitPoints.push(new Point(point.string));
+
+            }
+
+            // Seed orbit is made to be sigma 3, so iterate until at sigma
+            for (let i = 3; i < sigma; i++) {
+
+                let newGroups = [];
+
+                // For each last group made, make set of new groups
+                for (let j = 0; j < lastGroups.length; j++) {
+
+                    // Go through each point in the group
+                    // Each points creates a new group
+                    for (let k = lastGroups[j].length - 1; k >= 0; k--) {
+
+                        newGroups.push([]);
+
+                        let point = new Point(lastGroups[j][k].string);
+                        cursor = jump;
+
+                        // Iterate (period - k) time to create new points in their group
+                        for (let l = 0; l < k + 1; l++) {
+
+                            point.increaseDigit(cursor);
+
+                            // Move cursor
+                            cursor += jump;
+                            if (cursor >= rotNumber.denominator) {
+                                cursor -= rotNumber.denominator;
+                            }
+
+                            newGroups[newGroups.length - 1].push(new Point(point.string));
+
+                        }
+
+                    }
+
+                }
+
+                // Assign all new points found to 
+                // Make new groups made here the last groups for the next iteration
+                lastGroups = [];
+
+                for (let i = 0; i < newGroups.length; i++) {
+
+                    lastGroups.push([]);
+
+                    for (let j = 0; j < newGroups[i].length; j++) {
+
+                        lastGroups[i].push(newGroups[i][j]);
+                        orbitPoints.push(newGroups[i][j]);
+
+                    }
+                }
+
+            }
+
+            // Create new list of orbits, assigning each point found
+            // to an orbit
+            let orbits = []
+
+            for (let i = 0; i < orbitPoints.length; i++) {
+
+                orbits.push(new Orbit(orbitPoints[i], sigma));
+
+            }
+
+            return orbits;
+
+        }
+
+    }
+
 }
 
 // Point objects carries minimal information so they can be generated quickly (only String value)
@@ -177,6 +359,26 @@ class Point {
         }
 
         return sigma + 1;
+
+    }
+
+    // Increase specified index in string by 1
+    // @param:  int index = index of digit to increase
+    // @return: this point
+    increaseDigit(index) {
+
+        let string = this.string;
+
+        string = this.string.substring(0, index);
+        string = string + (parseInt(this.string.substring(index, index + 1)) + 1).toString();
+                
+        if (index != this.string.length - 1) {
+            string = string + this.string.substring(index + 1);
+        }
+
+        this.string = string;
+
+        return this;
 
     }
 
@@ -267,6 +469,11 @@ class Fraction {
 
     toString() {
         return this.numerator.toString() + "/" + this.denominator.toString();
+    }
+
+    // Checks if fraction is simplified
+    isSimplified() {
+        return this.denominator % this.numerator != 0;
     }
     
 }

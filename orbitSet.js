@@ -208,4 +208,18 @@ class OrbitSet {
 
     }
 
+    // Convert orbit set to string
+    toString() {
+        
+        let string = "";
+
+        // For each orbit in set, add it and delimeter comma
+        for (let i = 0; i < orbits.length; i++) {
+            string = string + orbits[i].toString() + ","
+        }
+
+        return "[" + string.substring(0, string.length - 1) + "]";
+
+    }
+
 }

@@ -283,12 +283,17 @@ class Orbit {
 
     }
 
+    // Convert orbit to string be returning smallest point's string
+    toString() {
+        return this.point.string;
+    }
+
 }
 
 // Point objects carries minimal information so they can be generated quickly (only String value)
 class Point {
 
-	// @param: String string            = String that represents point
+	// @param: String string = String that represents point
 	constructor(string) {
 
 		this.string = string;

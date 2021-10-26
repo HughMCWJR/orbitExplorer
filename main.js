@@ -112,10 +112,10 @@ function generateOrbits() {
 
     for (let i = 0; i < orbits.length; i++) {
 
-        string = string + "[" + orbits[i].point.string + "],";
+        string = string + orbits[i].toString() + ", ";
 
     }
 
-    document.getElementById("orbits").innerHTML = string;
+    document.getElementById("orbits").innerHTML = string.substring(0, string.length - 1);
 
 }

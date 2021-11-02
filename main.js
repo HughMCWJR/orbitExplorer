@@ -11,8 +11,6 @@ function generateOrbitAttributes() {
 
     }
 
-    
-
     // See if fraction is in input
     fractionPoint = document.getElementById("orbitInput").value.match(/\d+\/\d+/);
 
@@ -36,7 +34,7 @@ function generateOrbitAttributes() {
         denominator = parseInt(denominator.substring(1));
 
         // Set orbit from fraction
-        orbitSet = OrbitSet.generateOrbitSet([Point.convertFractionToPoint(new Fraction(numerator, denominator).string, sigma)], sigma);
+        orbitSet = OrbitSet.generateOrbitSetFromStrings([Point.convertFractionToPoint(new Fraction(numerator, denominator), sigma).string], sigma);
 
     } else {
 
@@ -47,7 +45,7 @@ function generateOrbitAttributes() {
         if (stringPoint != null) {
 
             // Set orbit from point
-            orbitSet = OrbitSet.generateOrbitSet([stringPoint], sigma);
+            orbitSet = OrbitSet.generateOrbitSetFromStrings([stringPoint], sigma);
 
         } else {
 

@@ -16,8 +16,15 @@ for (let i = 0; i < orbitPoints.length; i++) {
 //console.log(orbitSetTest.rotational);
 //console.log(orbitSetTest.rotational ? orbitSetTest.rotationalNumber.toString() : "DNE");
 
+/*
 let orbits = Orbit.generateOrbitsByAttributes(7, new Fraction(1, 5));
 
 for (let i = 0; i < orbits.length; i++) {
     console.log(orbits[i].point.string);
-}
+}*/
+
+//let testPoint = Point.convertFractionToPoint(new Fraction(1, 4), 3);
+
+let test = OrbitSet.generateOrbitSetsByAttributes(3, new Fraction(1,5));
+
+console.log(test);

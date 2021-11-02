@@ -109,7 +109,7 @@ class Orbit {
     // Then use new generated points to make more orbit points
     // @param:  int sigma
     //          Fraction rotNumber = rotational number wanted for orbits
-    // @return: Orbit[] list of orbit sets that have given attributes
+    // @return: Orbit[] list of orbits that have given attributes
     static generateOrbitsByAttributes(sigma, rotNumber) {
 
         // Points of orbits to be returned
@@ -161,7 +161,7 @@ class Orbit {
 
                 // Check if generated orbit is rotational
                 // If so, jump and has been found
-                if (OrbitSet.generateOrbitSet([newOrbitPoint.string], sigma).rotational) {
+                if (OrbitSet.generateOrbitSetFromStrings([newOrbitPoint.string], sigma).rotational) {
 
                     jump = i;
                     break;
@@ -445,7 +445,7 @@ class Fraction {
 
         if (this.denominator != otherFraction.denominator) {
 
-            console.log(this.toString() + "and" + otherFraction.toString());
+            console.log(this.toString() + " and " + otherFraction.toString());
             throw "Comparing fractions in different standard form";
 
         }

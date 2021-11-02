@@ -62,13 +62,12 @@ class OrbitSet {
 
     }
 
-    // Checks if orbit set is rotational
-    // Requires orbits in set to have point, sigma, and fractions assigned
-    // @returm: Bool if fraction is rotational
-    #checkRotational() {
+    // Generate 2d array of digit gaps for this orbit set
+    // Each critical length between fixed points is represented by an array in this array
+    // Each array is assigned such that [min Fraction in this digit, max Fraction]
+    // @return: 2d array
+    generateDigitGaps() {
 
-        // Each critical length between fixed points is represented by an array in this array
-        // Each array is assigned such that [min Fraction in this digit, max Fraction]
         let digitGaps = [];
 
         for (let i = 0; i < this.sigma; i++) {
@@ -112,6 +111,18 @@ class OrbitSet {
             }
 
         }
+
+        return digitGaps;
+
+    }
+
+    // Checks if orbit set is rotational
+    // Requires orbits in set to have point, sigma, and fractions assigned
+    // @return: Bool if fraction is rotational
+    #checkRotational() {
+
+        // Generate digit gaps for this orbit
+        let digitGaps = this.generateDigitGaps();
 
         // Critical length
         const criticalLength = new Fraction(this.orbits[0].fractions[0].denominator / this.sigma, this.orbits[0].fractions[0].denominator);
@@ -173,17 +184,17 @@ class OrbitSet {
     }
 
     // Generates an orbit set and returns it
-    // @param:  String[] points = string values of points to be in orbit set
-    //          int sigma       = sigma of orbit set
+    // @param:  String[] strings = string values of points to be in orbit set
+    //          int sigma        = sigma of orbit set
     // @return: OrbitSet orbitSet
-    static generateOrbitSet(points, sigma = null) {
+    static generateOrbitSetFromStrings(strings, sigma = null) {
 
         // Find sigma if needed
         if (!sigma) {
 
-            for (let i = 0; i < points.length; i++) {
+            for (let i = 0; i < strings.length; i++) {
 
-                let point = new Point(points[i]);
+                let point = new Point(strings[i]);
 
                 if (point.findLowestSigma() > sigma) {
 
@@ -198,9 +209,9 @@ class OrbitSet {
         // Find orbits from points
         let orbits = [];
 
-        for (let i = 0; i < points.length; i++) {
+        for (let i = 0; i < strings.length; i++) {
 
-            orbits.push(new Orbit(new Point(points[i]), sigma));
+            orbits.push(new Orbit(new Point(strings[i]), sigma));
 
         }
 
@@ -219,6 +230,144 @@ class OrbitSet {
         }
 
         return "[" + string.substring(0, string.length - 1) + "]";
+
+    }
+
+    // Add point to this orbit set, deos not modify set
+    // @param : Orbit orbit
+    // @return: Orbit Set with new orbit added
+    addOrbit(orbit) {
+
+        return new OrbitSet(this.orbits.push(orbit), this.sigma, this.rotationalNumber);
+
+    }
+
+    // Generate orbit sets with given attributes
+    // Uses algorithm where it checks orbits in "wiggle"
+    // intervals between two points
+    // This implementation will use arbitrary wiggle
+    // interval between first two digit gaps
+    // and find the wiggle inteval between them
+    // This process will continue making larger orbit sets
+    // until maximal orbit sets generated
+    // @param:  int sigma
+    //          Fraction rotNumber = rotational number wanted for orbits
+    // @return: OrbitSet[] list of orbit sets that have given attributes
+    static generateOrbitSetsByAttributes(sigma, rotNumber) {
+
+        // Basis orbits for orbit sets
+        let orbits = Orbit.generateOrbitsByAttributes(sigma, rotNumber);
+
+        // Orbit sets to return
+        let orbitSets = [];
+
+        // Orbit sets to build off of in next iteration
+        let newOrbitSets = [];
+
+        // Assign starting orbit sets from orbits
+        for (let i = 0; i < orbits.length; i++) {
+            
+            let orbitSet = new OrbitSet(orbits[i], sigma, rotNumber);
+            
+            orbitSets.push(orbitSet);
+            newOrbitSets.push(orbitSet);
+
+        }
+
+        // Critical length
+        const criticalLength = new Fraction(rotNumber.denominator / this.sigma, rotNumber.denominator);
+
+        // While finding new orbit sets, build larger orbit sets based off of current orbit sets
+        while (newOrbitSets.length != 0) {
+
+            let foundOrbitSets = [];
+
+            // For each current orbit set, try and build bigger ones
+            for (let i = 0; i < newOrbitSets.length; i++) {
+
+                let digitGaps = newOrbitSets[i].generateDigitGaps();
+
+                // Find first non-empty digit gap
+                let firstDigitGapIndex = 0;
+
+                console.log(digitGaps[firstDigitGapIndex]);
+
+                while (digitGaps[firstDigitGapIndex].length == 0) {
+                    firstDigitGapIndex++;
+                }
+                // Find next non-empty digit gap
+                let secondDigitGapIndex = firstDigitGapIndex + 1;
+
+                while (digitGaps[secondDigitGapIndex % sigma].length == 0) {
+                    firstDigitGapIndex++;
+                }
+
+                secondDigitGapIndex = secondDigitGapIndex % sigma;
+
+                // Find length to see how many critical lengths there are
+                // Leftover length after subtracting critical lengths is wiggle length
+                let length = digitGaps[secondDigitGapIndex][0].compareTo(digitGaps[firstDigitGapIndex][1]);
+
+                let numCriticalLengths = 0;
+
+                while (length > criticalLength.numerator) {
+                    numCriticalLengths++;
+                    length -= criticalLength.numerator;
+                }
+
+                let wiggleLength = length;
+
+                // Place wiggle length in between every critical length
+                // and on each opposite end
+                // Add possible orbits from these wiggle lengths
+                let possibleOrbitFractions = [];
+
+                for (let j = 0; j <= numCriticalLengths; j++) {
+
+                    // Find bounds for possible fractions, non-inclusive
+                    let lowerNumerator = digitGaps[firstDigitGapIndex][1] + Math.floor(criticalLength.numerator * j);
+                    let upperNumerator = digitGaps[secondDigitGapIndex][0] - Math.floor(criticalLength.numerator * (numCriticalLengths - j));
+
+                    // Add all possible orbit fractions
+                    for (let k = lowerNumerator + 1; k < upperNumerator; k++) {
+
+                        possibleOrbitFractions.push(new Fraction(k, rotNumber.denominator));
+
+                    }
+
+                }
+
+                // Check to see if each fraction is rotational with this orbit set
+                // If so, add to new orbit sets found
+                for (let j = 0; j < possibleOrbitFractions.length; j++) {
+
+                    let point = Point.convertFractionToPoint(possibleOrbitFractions[j]);
+
+                    let possibleOrbitSet = newOrbitSets[i].addOrbit(new Orbit(point));
+
+                    if (possibleOrbitSet.rotational) {
+
+                        foundOrbitSets.push(possibleOrbitSet);
+
+                    }
+
+                }
+
+            }
+
+            // Add found orbit sets
+            newOrbitSets = [];
+
+            for (let i = 0; i < foundOrbitSets.length; i++) {
+
+                newOrbitSets.push(foundOrbitSets[i]);
+                orbitSets.push(foundOrbitSets[i]);
+
+            }
+
+        }
+
+        return orbitSets;
 
     }
 

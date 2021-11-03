@@ -3,7 +3,9 @@ class OrbitSet {
 
     // @param:    Orbit[] orbits  = orbits in this set
     //            int sigma                 = Sigma of orbit, if not given assume lowest
-    //            Fraction rotationalNumber = Fraction that represents rotational number of orbit set
+    //            Fraction rotationalNumber = Fraction that represents rotational number of orbit set,
+    //                                        if not given then orbit set checks if it is rotational
+    //                                        and finds rotational number if so
     // @assigned: ...
     //            bool rotational = if this set is rotational
     constructor(orbits, sigma = null, rotationalNumber = null) {
@@ -225,8 +227,8 @@ class OrbitSet {
         let string = "";
 
         // For each orbit in set, add it and delimeter comma
-        for (let i = 0; i < orbits.length; i++) {
-            string = string + orbits[i].toString() + ","
+        for (let i = 0; i < this.orbits.length; i++) {
+            string = string + this.orbits[i].toString() + ","
         }
 
         return "[" + string.substring(0, string.length - 1) + "]";
@@ -238,7 +240,10 @@ class OrbitSet {
     // @return: Orbit Set with new orbit added
     addOrbit(orbit) {
 
-        return new OrbitSet(this.orbits.push(orbit), this.sigma, this.rotationalNumber);
+        let copyOfOrbits = [...this.orbits, orbit];
+
+        // Give null for rotational number so orbit set checks if it is rotational
+        return new OrbitSet(copyOfOrbits, this.sigma);
 
     }
 
@@ -252,8 +257,12 @@ class OrbitSet {
     // until maximal orbit sets generated
     // @param:  int sigma
     //          Fraction rotNumber = rotational number wanted for orbits
-    // @return: OrbitSet[] list of orbit sets that have given attributes
+    // @return: OrbitSet[] list of orbit sets that have given attributes,
+    //                     sets are returned in rotational order
     static generateOrbitSetsByAttributes(sigma, rotNumber) {
+
+        // Denominator for all fractions in orbits given these attributes
+        const denominator = (sigma ** rotNumber.denominator) - 1;
 
         // Basis orbits for orbit sets
         let orbits = Orbit.generateOrbitsByAttributes(sigma, rotNumber);
@@ -267,7 +276,7 @@ class OrbitSet {
         // Assign starting orbit sets from orbits
         for (let i = 0; i < orbits.length; i++) {
             
-            let orbitSet = new OrbitSet(orbits[i], sigma, rotNumber);
+            let orbitSet = new OrbitSet([orbits[i]], sigma, rotNumber);
             
             orbitSets.push(orbitSet);
             newOrbitSets.push(orbitSet);
@@ -275,12 +284,12 @@ class OrbitSet {
         }
 
         // Critical length
-        const criticalLength = new Fraction(rotNumber.denominator / this.sigma, rotNumber.denominator);
+        const criticalLength = new Fraction(denominator / sigma, denominator);
 
         // While finding new orbit sets, build larger orbit sets based off of current orbit sets
         while (newOrbitSets.length != 0) {
 
-            let foundOrbitSets = [];
+            let  foundOrbitSets = [];
 
             // For each current orbit set, try and build bigger ones
             for (let i = 0; i < newOrbitSets.length; i++) {
@@ -290,16 +299,15 @@ class OrbitSet {
                 // Find first non-empty digit gap
                 let firstDigitGapIndex = 0;
 
-                console.log(digitGaps[firstDigitGapIndex]);
-
                 while (digitGaps[firstDigitGapIndex].length == 0) {
                     firstDigitGapIndex++;
                 }
+
                 // Find next non-empty digit gap
                 let secondDigitGapIndex = firstDigitGapIndex + 1;
 
                 while (digitGaps[secondDigitGapIndex % sigma].length == 0) {
-                    firstDigitGapIndex++;
+                    secondDigitGapIndex++;
                 }
 
                 secondDigitGapIndex = secondDigitGapIndex % sigma;
@@ -325,13 +333,13 @@ class OrbitSet {
                 for (let j = 0; j <= numCriticalLengths; j++) {
 
                     // Find bounds for possible fractions, non-inclusive
-                    let lowerNumerator = digitGaps[firstDigitGapIndex][1] + Math.floor(criticalLength.numerator * j);
-                    let upperNumerator = digitGaps[secondDigitGapIndex][0] - Math.floor(criticalLength.numerator * (numCriticalLengths - j));
+                    let lowerNumerator = digitGaps[firstDigitGapIndex][1].numerator + Math.floor(criticalLength.numerator * j);
+                    let upperNumerator = digitGaps[secondDigitGapIndex][0].numerator - Math.floor(criticalLength.numerator * (numCriticalLengths - j));
 
                     // Add all possible orbit fractions
                     for (let k = lowerNumerator + 1; k < upperNumerator; k++) {
 
-                        possibleOrbitFractions.push(new Fraction(k, rotNumber.denominator));
+                        possibleOrbitFractions.push(new Fraction(k, denominator));
 
                     }
 
@@ -341,13 +349,19 @@ class OrbitSet {
                 // If so, add to new orbit sets found
                 for (let j = 0; j < possibleOrbitFractions.length; j++) {
 
-                    let point = Point.convertFractionToPoint(possibleOrbitFractions[j]);
+                    // First check that next fraction is larger then largest in this set
+                    // This allows sets to be in rotational/ascending order and disallows duplicates
+                    if (Orbit.findOrbitFractions(possibleOrbitFractions[j], sigma)[0].compareTo(newOrbitSets[i].orbits[newOrbitSets[i].orbits.length - 1].fractions[0]) > 0) {
 
-                    let possibleOrbitSet = newOrbitSets[i].addOrbit(new Orbit(point));
-
-                    if (possibleOrbitSet.rotational) {
-
-                        foundOrbitSets.push(possibleOrbitSet);
+                        let point = Point.convertFractionToPoint(possibleOrbitFractions[j], sigma);
+    
+                        let possibleOrbitSet = newOrbitSets[i].addOrbit(new Orbit(point, sigma));
+    
+                        if (possibleOrbitSet.rotational) {
+    
+                            foundOrbitSets.push(possibleOrbitSet);
+    
+                        }
 
                     }
 

@@ -6,12 +6,14 @@
     <title></title>
     <script type="text/javascript" src="orbit.js"></script>
     <script type="text/javascript" src="orbitSet.js"></script>
-    <script type="text/javascript" src="test.js"></script>
+    <!--<script type="text/javascript" src="test.js"></script>-->
     <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
     <p>Sigma:</p>
     <input type="text" id="sigma"><br><br>
+    <p>Rotational Number:</p>
+	<input type="text" id="orbitRotNum"><br><br>
     <p style="font-weight: bold;">Generate Orbit Attributes</p>
     <p>Point or Fraction:</p>
 	<input type="text" id="orbitInput"><br><br>
@@ -25,10 +27,13 @@
     <p>Rotational Number:</p>
     <p id="rotationalNumber"></p><br><br>
     <p style="font-weight: bold;">Generate Orbits from Attributes</p>
-    <p>Set sigma above</p>
-    <p>Rotational Number:</p>
-	<input type="text" id="orbitRotNum"><br><br>
+    <p>Set attributes above</p>
     <button onclick="generateOrbits()">Generate</button>
     <p id="orbits"></p><br><br>
+    <p style="font-weight: bold;">Generate Orbit Sets from Attributes</p>
+    <p>Set attributes above</p>
+    <button onclick="generateOrbitSets()">Generate</button>
+    <p id="orbitSets"></p><br><br>
+    <p id="orbitSetsByLength"></p><br><br>
 </body>
 </html>

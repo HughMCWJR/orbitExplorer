@@ -65,7 +65,7 @@ function generateOrbitAttributes() {
 
 function generateOrbits() {
 
-    // Set if sigma is set
+    // See if sigma is set
     let sigma = document.getElementById("sigma").value.match(/\d+/);
 
     if (sigma) {
@@ -115,5 +115,85 @@ function generateOrbits() {
     }
 
     document.getElementById("orbits").innerHTML = string.substring(0, string.length - 1);
+
+}
+
+function generateOrbitSets() {
+
+    // See if sigma is set
+    let sigma = document.getElementById("sigma").value.match(/\d+/);
+
+    if (sigma) {
+
+        sigma = parseInt(sigma[0]);
+
+    } else {
+
+        alert("Sigma not given");
+        return;
+
+    }
+
+    // Get rot num
+    rotNumber = document.getElementById("orbitRotNum").value.match(/\d+\/\d+/);
+
+    // Sigma is required for creating orbits
+    // Is not set alert user and return from function
+    if (rotNumber == null) {
+
+        alert("Rotaional number not given");
+        return;
+
+    }
+
+    // Find numerator and denominator
+    let numerator   = document.getElementById("orbitRotNum").value.match(/\d+\//)[0];
+    let denominator = document.getElementById("orbitRotNum").value.match(/\/\d+/)[0];
+
+    // Change numerator and denominator to integers
+    numerator   = parseInt(numerator.substring(0, numerator.length - 1));
+    denominator = parseInt(denominator.substring(1));
+
+    // Set rotational number
+    rotNumber = new Fraction(numerator, denominator);
+
+    // Find orbit sets
+    let orbitSets = OrbitSet.generateOrbitSetsByAttributes(sigma, rotNumber);
+
+    // Convert found orbits to string
+    let string = "";
+
+    for (let i = 0; i < orbitSets.length; i++) {
+
+        string = string + orbitSets[i].toString() + ", ";
+
+    }
+
+    document.getElementById("orbitSets").innerHTML = string.substring(0, string.length - 1);
+
+    // Print how many orbits there are of each length
+    numOrbitEachLength = [];
+
+    for (let i = 0; i < orbitSets.length; i++) {
+
+        if (numOrbitEachLength.length < orbitSets[i].orbits.length) {
+
+            numOrbitEachLength.push(0);
+
+        }
+
+        numOrbitEachLength[orbitSets[i].orbits.length - 1] += 1;
+
+    }
+
+    string = "";
+
+    for (let i = 0; i < numOrbitEachLength.length; i++) {
+
+        string = string + "Orbit Sets of length " + (i + 1).toString() + ": " + numOrbitEachLength[i].toString() + "<br>";
+
+    }
+
+    document.getElementById("orbitSetsByLength").innerHTML = string;
 
 }

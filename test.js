@@ -25,6 +25,12 @@ for (let i = 0; i < orbits.length; i++) {
 
 //let testPoint = Point.convertFractionToPoint(new Fraction(1, 4), 3);
 
-let test = OrbitSet.generateOrbitSetsByAttributes(3, new Fraction(1,5));
+//console.log(OrbitSet.generateOrbitSetFromStrings(["00001","00101"], 3).rotational);
 
-console.log(test);
+let test = OrbitSet.generateOrbitSetsByAttributes(7, new Fraction(1,5));
+
+for (let i = 0; i < test.length; i++) {
+
+    console.log(test[i].toString());
+
+}

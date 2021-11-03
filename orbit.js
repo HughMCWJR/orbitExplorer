@@ -15,7 +15,9 @@ class Orbit {
         }
 
         // Fraction values for points with smallest fraction first
-        this.fractions = this.#findFractions(point, sigma);
+        let givenFraction = point.getFractionValue(sigma);
+
+        this.fractions = Orbit.findOrbitFractions(givenFraction, sigma);
 
         // Smallest point in orbit
         this.point = Point.convertFractionToPoint(this.fractions[0], sigma);
@@ -27,35 +29,9 @@ class Orbit {
     reassignSigma(sigma) {
 
         // Fraction values for points with smallest fraction first
-        this.fractions = this.#findFractions(this.point, sigma);
+        let givenFraction = this.point.getFractionValue(sigma);
 
-    }
-
-    // Finds fraction values for points in orbit
-    // @param:  Point point = any given point in an orbit
-    //          int sigma   = sigma of orbit
-    // @return: Fraction[] fractions with smallest fraction first, in rotational order
-    #findFractions(point, sigma) {
-
-        let smallestFractionIndex = 0;
-        let fraction = point.getFractionValue(sigma);
-        let foundFractions = [fraction, fraction.nextFraction(sigma)];
-
-        while (foundFractions[0].compareTo(foundFractions[foundFractions.length - 1]) != 0) {
-
-            if (foundFractions[foundFractions.length - 1].compareTo(foundFractions[smallestFractionIndex]) < 0) {
-
-                smallestFractionIndex = foundFractions.length - 1;
-
-            }
-
-            foundFractions.push(foundFractions[foundFractions.length - 1].nextFraction(sigma));
-
-        }
-
-        foundFractions.splice(foundFractions.length - 1, 1);
-
-        return foundFractions.slice(smallestFractionIndex).concat(foundFractions.slice(0, smallestFractionIndex));
+        this.fractions = Orbit.findOrbitFractions(givenFraction, sigma);
 
     }
 
@@ -285,7 +261,35 @@ class Orbit {
 
     // Convert orbit to string be returning smallest point's string
     toString() {
-        return this.point.string;
+        return "_" + this.point.string;
+    }
+
+    // Find other fractions in an orbit with the given fraction
+    // @param:  Fraction fraction
+    //          Int sigma    
+    // @return: Fraction[] fractions that orbit with given fraction, 
+    //                     in order of rotation with smallest fraction first
+    static findOrbitFractions(fraction, sigma) {
+
+        let smallestFractionIndex = 0;
+        let foundFractions = [fraction, fraction.nextFraction(sigma)];
+
+        while (foundFractions[0].compareTo(foundFractions[foundFractions.length - 1]) != 0) {
+
+            if (foundFractions[foundFractions.length - 1].compareTo(foundFractions[smallestFractionIndex]) < 0) {
+
+                smallestFractionIndex = foundFractions.length - 1;
+
+            }
+
+            foundFractions.push(foundFractions[foundFractions.length - 1].nextFraction(sigma));
+
+        }
+
+        foundFractions.splice(foundFractions.length - 1, 1);
+
+        return foundFractions.slice(smallestFractionIndex).concat(foundFractions.slice(0, smallestFractionIndex));
+
     }
 
 }

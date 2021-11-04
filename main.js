@@ -38,14 +38,23 @@ function generateOrbitAttributes() {
 
     } else {
 
-        // See if point is in orbit
-        stringPoint = document.getElementById("orbitInput").value.match(/\d+/)[0];
+        // See if points of orbit written
+        stringPoints = document.getElementById("orbitInput").value.match(/\d+/g);
 
         // If neither fraction nor point is in orbit alert user and return
-        if (stringPoint != null) {
+        if (stringPoints != null) {
+
+            // Generate orbits
+            let givenOrbits = []
+
+            for (let i = 0; i < stringPoints.length; i++) {
+
+                givenOrbits.push(new Orbit(new Point(stringPoints[i]), sigma));
+
+            }
 
             // Set orbit from point
-            orbitSet = OrbitSet.generateOrbitSetFromStrings([stringPoint], sigma);
+            orbitSet = new OrbitSet(givenOrbits, sigma);
 
         } else {
 
@@ -60,6 +69,7 @@ function generateOrbitAttributes() {
     document.getElementById("smallestFraction").innerHTML = orbitSet.orbits[0].fractions[0].toString();
     document.getElementById("rotational").innerHTML = orbitSet.rotational;
     document.getElementById("rotationalNumber").innerHTML = orbitSet.rotational ? orbitSet.rotationalNumber : "DNE";
+    document.getElementById("cardinality").innerHTML = orbitSet.orbits.length;
 
 }
 

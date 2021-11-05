@@ -200,10 +200,10 @@ function generateOrbitSets() {
 
     for (let i = 0; i < numOrbitEachLength.length; i++) {
 
-        string = string + "Orbit Sets of length " + (i + 1).toString() + ": " + numOrbitEachLength[i].toString() + "<br>";
+        string = string + "Orbit Sets of cardinality " + (i + 1).toString() + ": " + numOrbitEachLength[i].toString() + "<br>";
 
     }
 
-    document.getElementById("orbitSetsByLength").innerHTML = string;
+    document.getElementById("orbitSetsByCardinality").innerHTML = string;
 
 }

@@ -292,6 +292,27 @@ class Orbit {
 
     }
 
+    // Finds the index of the second smallest fraction in an orbit
+    // @param:  Fraction rotationalNumber
+    // @return: int index
+    static findIndexOfSecondPoint(fraction) {
+
+        // Current location in terms of value of fractions
+        let locationByOrder = fraction.numerator;
+
+        // Current index in rotationally ordered array
+        let currentIndex = 1;
+
+        // Rotate around until location is equal to 1, the second smallest index
+        while (locationByOrder != 1) {
+            currentIndex++;
+            locationByOrder = (locationByOrder + fraction.numerator) % fraction.denominator;
+        }
+
+        return currentIndex;
+
+    }
+
 }
 
 // Point objects carries minimal information so they can be generated quickly (only String value)

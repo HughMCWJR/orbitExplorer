@@ -286,6 +286,10 @@ class OrbitSet {
         // Critical length
         const criticalLength = new Fraction(denominator / sigma, denominator);
 
+        // Index of second point by ascending value
+        // Needed for finding gap between largest orbit and smallest
+        let secondIndexByOrder = Orbit.findIndexOfSecondPoint(rotNumber);
+
         // While finding new orbit sets, build larger orbit sets based off of current orbit sets
         while (newOrbitSets.length != 0) {
 
@@ -294,73 +298,76 @@ class OrbitSet {
             // For each current orbit set, try and build bigger ones
             for (let i = 0; i < newOrbitSets.length; i++) {
 
-                let digitGaps = newOrbitSets[i].generateDigitGaps();
+                // Have to go through gaps in between each adjacent orbit
+                // because new orbits can be in between any two lower orbits
+                for (let j = 0; j < newOrbitSets[i].orbits.length; j++) {
 
-                // Find first non-empty digit gap
-                let firstDigitGapIndex = 0;
+                    let gapMinimum;
+                    let gapMaximum;
 
-                while (digitGaps[firstDigitGapIndex].length == 0) {
-                    firstDigitGapIndex++;
-                }
+                    // Find two adjacent fractions defining a gap
+                    // If last orbit in set then it is adjacent with next group
+                    if (j == newOrbitSets[i].orbits.length - 1) {
 
-                // Find next non-empty digit gap
-                let secondDigitGapIndex = firstDigitGapIndex + 1;
+                        gapMinimum = newOrbitSets[i].orbits[j].fractions[0];
+                        gapMaximum = newOrbitSets[i].orbits[0].fractions[secondIndexByOrder];
 
-                while (digitGaps[secondDigitGapIndex % sigma].length == 0) {
-                    secondDigitGapIndex++;
-                }
+                    } else {
 
-                secondDigitGapIndex = secondDigitGapIndex % sigma;
-
-                // Find length to see how many critical lengths there are
-                // Leftover length after subtracting critical lengths is wiggle length
-                let length = digitGaps[secondDigitGapIndex][0].compareTo(digitGaps[firstDigitGapIndex][1]);
-
-                let numCriticalLengths = 0;
-
-                while (length > criticalLength.numerator) {
-                    numCriticalLengths++;
-                    length -= criticalLength.numerator;
-                }
-
-                let wiggleLength = length;
-
-                // Place wiggle length in between every critical length
-                // and on each opposite end
-                // Add possible orbits from these wiggle lengths
-                let possibleOrbitFractions = [];
-
-                for (let j = 0; j <= numCriticalLengths; j++) {
-
-                    // Find bounds for possible fractions, non-inclusive
-                    let lowerNumerator = digitGaps[firstDigitGapIndex][1].numerator + Math.floor(criticalLength.numerator * j);
-                    let upperNumerator = digitGaps[secondDigitGapIndex][0].numerator - Math.floor(criticalLength.numerator * (numCriticalLengths - j));
-
-                    // Add all possible orbit fractions
-                    for (let k = lowerNumerator + 1; k < upperNumerator; k++) {
-
-                        possibleOrbitFractions.push(new Fraction(k, denominator));
+                        gapMinimum = newOrbitSets[i].orbits[j].fractions[0];
+                        gapMaximum = newOrbitSets[i].orbits[j + 1].fractions[0];
 
                     }
 
-                }
+                    // Find length to see how many critical lengths there are
+                    // Leftover length after subtracting critical lengths is wiggle length
+                    let length = gapMaximum.compareTo(gapMinimum);
 
-                // Check to see if each fraction is rotational with this orbit set
-                // If so, add to new orbit sets found
-                for (let j = 0; j < possibleOrbitFractions.length; j++) {
+                    let numCriticalLengths = 0;
 
-                    // First check that next fraction is larger then largest in this set
-                    // This allows sets to be in rotational/ascending order and disallows duplicates
-                    if (Orbit.findOrbitFractions(possibleOrbitFractions[j], sigma)[0].compareTo(newOrbitSets[i].orbits[newOrbitSets[i].orbits.length - 1].fractions[0]) > 0) {
+                    while (length > criticalLength.numerator) {
+                        numCriticalLengths++;
+                        length -= criticalLength.numerator;
+                    }
 
-                        let point = Point.convertFractionToPoint(possibleOrbitFractions[j], sigma);
-    
-                        let possibleOrbitSet = newOrbitSets[i].addOrbit(new Orbit(point, sigma));
-    
-                        if (possibleOrbitSet.rotational) {
-    
-                            foundOrbitSets.push(possibleOrbitSet);
-    
+                    // Place wiggle length in between every critical length
+                    // and on each opposite end
+                    // Add possible orbits from these wiggle lengths
+                    let possibleOrbitFractions = [];
+
+                    for (let k = 0; k <= numCriticalLengths; k++) {
+
+                        // Find bounds for possible fractions, non-inclusive
+                        let lowerNumerator = gapMinimum.numerator + Math.floor(criticalLength.numerator * k);
+                        let upperNumerator = gapMaximum.numerator - Math.floor(criticalLength.numerator * (numCriticalLengths - k));
+
+                        // Add all possible orbit fractions
+                        for (let l = lowerNumerator + 1; l < upperNumerator; l++) {
+
+                            possibleOrbitFractions.push(new Fraction(l, denominator));
+
+                        }
+
+                    }
+
+                    // Check to see if each fraction is rotational with this orbit set
+                    // If so, add to new orbit sets found
+                    for (let k = 0; k < possibleOrbitFractions.length; k++) {
+
+                        // First check that next fraction is larger then largest in this set
+                        // This allows sets to be in rotational/ascending order and disallows duplicates
+                        if (Orbit.findOrbitFractions(possibleOrbitFractions[k], sigma)[0].compareTo(newOrbitSets[i].orbits[newOrbitSets[i].orbits.length - 1].fractions[0]) > 0) {
+
+                            let point = Point.convertFractionToPoint(possibleOrbitFractions[k], sigma);
+        
+                            let possibleOrbitSet = newOrbitSets[i].addOrbit(new Orbit(point, sigma));
+        
+                            if (possibleOrbitSet.rotational) {
+        
+                                foundOrbitSets.push(possibleOrbitSet);
+        
+                            }
+
                         }
 
                     }

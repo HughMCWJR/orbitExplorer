@@ -355,7 +355,7 @@ class OrbitSet {
                     for (let k = 0; k < possibleOrbitFractions.length; k++) {
 
                         // First check that next fraction is larger then largest in this set
-                        // This allows sets to be in rotational/ascending order and disallows duplicates
+                        // This allows sets to be in rotational/ascending order and does not allow duplicates
                         if (Orbit.findOrbitFractions(possibleOrbitFractions[k], sigma)[0].compareTo(newOrbitSets[i].orbits[newOrbitSets[i].orbits.length - 1].fractions[0]) > 0) {
 
                             let point = Point.convertFractionToPoint(possibleOrbitFractions[k], sigma);

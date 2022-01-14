@@ -168,42 +168,56 @@ function generateOrbitSets() {
     rotNumber = new Fraction(numerator, denominator);
 
     // Find orbit sets
-    let orbitSets = OrbitSet.generateOrbitSetsByAttributes(sigma, rotNumber);
+    // Use web worker because of large amount of computation
+    if (window.Worker) {
 
-    // Convert found orbits to string
-    let string = "";
+        var myWorker = new Worker("worker.js");
 
-    for (let i = 0; i < orbitSets.length; i++) {
+        myWorker.postMessage([sigma, rotNumber]);
 
-        string = string + orbitSets[i].toString() + ", ";
+        myWorker.onmessage = function(e) {
 
-    }
+            let orbitSets = e.data;
 
-    document.getElementById("orbitSets").innerHTML = string.substring(0, string.length - 1);
+            // Convert found orbits to string
+            let string = "";
 
-    // Print how many orbits there are of each length
-    numOrbitEachLength = [];
+            for (let i = 0; i < orbitSets.length; i++) {
 
-    for (let i = 0; i < orbitSets.length; i++) {
+                string = string + orbitSets[i].toString() + ", ";
 
-        if (numOrbitEachLength.length < orbitSets[i].orbits.length) {
+            }
 
-            numOrbitEachLength.push(0);
+            document.getElementById("orbitSets").innerHTML = string.substring(0, string.length - 1);
+
+            // Print how many orbits there are of each length
+            numOrbitEachLength = [];
+
+            for (let i = 0; i < orbitSets.length; i++) {
+
+                if (numOrbitEachLength.length < orbitSets[i].orbits.length) {
+
+                    numOrbitEachLength.push(0);
+
+                }
+
+                numOrbitEachLength[orbitSets[i].orbits.length - 1] += 1;
+
+            }
+
+            string = "";
+
+            for (let i = 0; i < numOrbitEachLength.length; i++) {
+
+                string = string + "Orbit Sets of cardinality " + (i + 1).toString() + ": " + numOrbitEachLength[i].toString() + "<br>";
+
+            }
+
+            document.getElementById("orbitSetsByCardinality").innerHTML = string;
 
         }
 
-        numOrbitEachLength[orbitSets[i].orbits.length - 1] += 1;
-
     }
-
-    string = "";
-
-    for (let i = 0; i < numOrbitEachLength.length; i++) {
-
-        string = string + "Orbit Sets of cardinality " + (i + 1).toString() + ": " + numOrbitEachLength[i].toString() + "<br>";
-
-    }
-
-    document.getElementById("orbitSetsByCardinality").innerHTML = string;
 
 }
+

@@ -171,7 +171,7 @@ function generateOrbitSets() {
     // Use web worker because of large amount of computation
     if (window.Worker) {
 
-        var myWorker = new Worker("orbitSet.js");
+        var myWorker = new Worker("worker.js");
 
         myWorker.postMessage([sigma, rotNumber]);
 

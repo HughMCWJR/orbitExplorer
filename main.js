@@ -167,6 +167,49 @@ function generateOrbitSets() {
     // Set rotational number
     rotNumber = new Fraction(numerator, denominator);
 
+    let orbitSets = OrbitSet.generateOrbitSetsByAttributes(sigma, rotNumber);
+
+    // Convert found orbits to string
+    let string = "";
+
+    for (let i = 0; i < orbitSets.length; i++) {
+
+        string = string + orbitSets[i].toString() + ", ";
+
+    }
+
+    document.getElementById("orbitSets").innerHTML = string.substring(0, string.length - 1);
+
+    // Print how many orbits there are of each length
+    numOrbitEachLength = [];
+
+    for (let i = 0; i < orbitSets.length; i++) {
+
+        if (numOrbitEachLength.length < orbitSets[i].orbits.length) {
+
+            numOrbitEachLength.push(0);
+
+        }
+
+        numOrbitEachLength[orbitSets[i].orbits.length - 1] += 1;
+
+    }
+
+    string = "";
+
+    for (let i = 0; i < numOrbitEachLength.length; i++) {
+
+        string = string + "Orbit Sets of cardinality " + (i + 1).toString() + ": " + numOrbitEachLength[i].toString() + "<br>";
+
+    }
+
+    document.getElementById("orbitSetsByCardinality").innerHTML = string;
+
+
+    // TEMP
+    // DOES NOT SOLVE STATUS BREAKPOINT ERROR
+    /*
+
     // Find orbit sets
     // Use web worker because of large amount of computation
     if (window.Worker) {
@@ -218,6 +261,7 @@ function generateOrbitSets() {
         }
 
     }
+    */
 
 }
 

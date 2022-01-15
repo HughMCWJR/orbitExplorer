@@ -374,9 +374,6 @@ class OrbitSet {
 
                 }
 
-                // TEMP
-                document.getElementById("orbitSets").innerHTML = "Loading " + ".".repeat(i % 3);
-
             }
 
             // Add found orbit sets

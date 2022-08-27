@@ -248,6 +248,241 @@ class OrbitSet {
     }
 
     // Generate orbit sets with given attributes
+    // Uses algorithm where it generates maximal
+    // rotational sets by shifting pre-images.
+    // Finds non-maximal sets by taking all possible
+    // subsets of maximal sets.
+    // @param:  int sigma
+    //          Fraction rotNumber = rotational number wanted for orbits
+    // @return: OrbitSet[] list of orbit sets that have given attributes,
+    //                     sets are returned in rotational order
+    static generateOrbitSetsByAttributes(sigma, rotNumber) {
+
+        // Rotational sets object with k value as keys and array of string points as values
+        let sets = {};
+        for (let i = 1; i <= sigma - 1; i++)
+            sets[i] = [];
+
+        // Pre-image placements
+        // Each index in array represents (i + 1)th pre-image placement in the ith group
+        let preImagePlacement = [];
+
+        // Current points for current Pre-image placement
+        for (let i = 0; i < sigma - 2; i++)
+            preImagePlacement.push(0);
+
+        // Keeps track of iterations done for logging progress
+        // let iteration = 0;
+        // const totalNumberOfIterations = rotNumber.denominator ** (sigma - 2);
+
+        while (true) {
+            
+            // Array of booleans representing whether orbit set has orbit at that pre-image interval
+            const maxSet = []
+            for (let i = 0; i < sigma - 1; i++)
+                maxSet.push(true);
+
+            sets[sigma - 1].push(OrbitSet.getArrayOfStringsFromSet(preImagePlacement, maxSet, rotNumber));
+
+            OrbitSet.findLowerSets(sets, preImagePlacement, rotNumber, maxSet, sigma - 1);
+
+            if (!OrbitSet.increasePreImageByIndex(rotNumber.denominator, preImagePlacement, 0))
+                break;
+
+            // Logging progress
+            // iteration += 1;
+            // console.log(iteration / totalNumberOfIterations);
+
+        }
+
+        // TEMP
+        // Check for duplicates
+        /*
+        for (let i = 1; i <= sigma - 1; i++) {
+
+            const stringCopyArray = [];
+            for (let j = 0; j < sets[i].length; j++)
+                stringCopyArray.push(sets[i][j].toString());
+
+            const duplicates = stringCopyArray.filter((item, index) => stringCopyArray.indexOf(item) !== index);
+            for (duplicate of duplicates)
+                console.log(duplicate);
+
+        }
+        */
+
+        // Orbit sets to return
+        let orbitSets = [];
+
+        for (let i = 1; i <= sigma - 1; i++)
+            orbitSets = orbitSets.concat(sets[i]);
+
+        return orbitSets;
+
+    }
+
+    static increasePreImageByIndex(q, currentPreImagePlacement, i) {
+
+        if (i == currentPreImagePlacement.length)
+            return false;
+
+        currentPreImagePlacement[i] = currentPreImagePlacement[i] + 1;
+
+        if (currentPreImagePlacement[i] == q) {
+
+            currentPreImagePlacement[i] = 0;
+            return OrbitSet.increasePreImageByIndex(q, currentPreImagePlacement, i + 1);
+
+        }
+
+        return true;
+
+    }
+
+    static getArrayOfStringsFromSet(preImagePlacement, set, rotNumber) {
+
+        let currentDigit = 0;
+
+        let orbitStrings = [];
+
+        // Go through each group assigning digit
+        for (let i = 0; i < rotNumber.denominator; i++) {
+
+            for (let j = 0; j < set.length; j++) {
+
+                if (i === 0)
+                    orbitStrings.push("");
+
+                if (set[j])
+                    orbitStrings[j] += currentDigit.toString();
+
+                if (j !== set.length - 1 && preImagePlacement[j] === i)
+                    currentDigit += 1;
+    
+            }
+
+            if (i + 1 === rotNumber.denominator - rotNumber.numerator)
+                currentDigit += 1;
+
+        }
+
+        let finalOrbitStrings = [];
+        
+        // Convert orbitStrings array into string
+        for (let i = 0; i < set.length; i++) {
+
+            if (set[i]) {
+
+                let digits = orbitStrings[i].split("");
+
+                let orbitString = "";
+
+                for (let j = 0; j !== rotNumber.denominator - rotNumber.numerator; j = OrbitSet.mod(j + rotNumber.numerator, rotNumber.denominator)) {
+
+                    orbitString += digits[j].toString();
+
+                }
+
+                orbitString += digits[rotNumber.denominator - rotNumber.numerator].toString();
+
+                finalOrbitStrings.push(orbitString);
+
+            }
+
+        }
+
+        return finalOrbitStrings;
+
+    }
+
+    static findLowerSets(sets, preImagePlacement, rotNumber, currentSet, currentK) {
+
+        if (currentK === 1)
+            return;
+
+        // Go through and manually do edge cases with first point
+        let firstPointIndex = 0;
+        while (!currentSet[firstPointIndex])
+            firstPointIndex += 1;
+
+        // Wanted to make sure that orbits don't claim two modulos classes at a time so added "currentSet[j + 1]"
+        if (preImagePlacement[firstPointIndex] === 0 && currentSet[firstPointIndex + 1]) {
+
+            const newSet = [...currentSet];
+            newSet[firstPointIndex] = false;
+
+            sets[currentK - 1].push(OrbitSet.getArrayOfStringsFromSet(preImagePlacement, newSet, rotNumber));
+
+            OrbitSet.findLowerSets(sets, preImagePlacement, rotNumber, newSet, currentK - 1);
+
+        }
+
+        // Go through every point and check if it can be removed
+        // If comes across extra pre-image stop to avoid duplicates
+        for (let i = 0; i < rotNumber.denominator; i++) {
+
+            for (let j = 0; j < currentSet.length; j++) {
+
+                if (currentSet[j]) {
+
+                    if (j === 0) {
+                        continue;
+
+                    } else if (j === currentSet.length - 1) {
+
+                        if (preImagePlacement[preImagePlacement.length - 1] === i) {
+
+                            const newSet = [...currentSet];
+                            newSet[j] = false;
+
+                            sets[currentK - 1].push(OrbitSet.getArrayOfStringsFromSet(preImagePlacement, newSet, rotNumber));
+
+
+                            OrbitSet.findLowerSets(sets, preImagePlacement, rotNumber, newSet, currentK - 1);
+
+                        }
+
+                    } else {
+
+                        if ((preImagePlacement[j - 1] === i && preImagePlacement[j] >= i)) {
+
+                            const newSet = [...currentSet];
+                            newSet[j] = false;
+
+                            sets[currentK - 1].push(OrbitSet.getArrayOfStringsFromSet(preImagePlacement, newSet, rotNumber));
+
+                            OrbitSet.findLowerSets(sets, preImagePlacement, rotNumber, newSet, currentK - 1);
+
+                        }
+
+                    }
+
+                } else if (j === 0) {
+
+                    if (preImagePlacement[j] === i)
+                        return;
+
+                } else if (j === currentSet.length - 1) {
+
+                    if (preImagePlacement[j - 1] === i)
+                        return;
+
+                } else if ((preImagePlacement[j - 1] === i && preImagePlacement[j] >= i) ||
+                           (preImagePlacement[j - 1] >= i  && preImagePlacement[j] === i))
+                    return;
+
+            }
+
+        }
+
+    }
+
+    static mod(n, m) {
+        return ((n % m) + m) % m;
+    }
+
+    // OLD SLOWER ALGORITHM
+    // Generate orbit sets with given attributes
     // Uses algorithm where it checks orbits in "wiggle"
     // intervals between two points
     // This implementation will use arbitrary wiggle
@@ -259,7 +494,7 @@ class OrbitSet {
     //          Fraction rotNumber = rotational number wanted for orbits
     // @return: OrbitSet[] list of orbit sets that have given attributes,
     //                     sets are returned in rotational order
-    static generateOrbitSetsByAttributes(sigma, rotNumber) {
+    static oldGenerateOrbitSetsByAttributes(sigma, rotNumber) {
 
         // Denominator for all fractions in orbits given these attributes
         const denominator = (sigma ** rotNumber.denominator) - 1;

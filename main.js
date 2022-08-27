@@ -128,7 +128,7 @@ function generateOrbits() {
 
 }
 
-function generateOrbitSets() {
+function generateOrbitSets(useOldFormula) {
 
     // See if sigma is set
     let sigma = document.getElementById("sigma").value.match(/\d+/);
@@ -167,16 +167,19 @@ function generateOrbitSets() {
     // Set rotational number
     rotNumber = new Fraction(numerator, denominator);
 
-    let orbitSets = OrbitSet.generateOrbitSetsByAttributes(sigma, rotNumber);
+    let orbitSets = useOldFormula ? OrbitSet.oldGenerateOrbitSetsByAttributes(sigma, rotNumber) : OrbitSet.generateOrbitSetsByAttributes(sigma, rotNumber);
 
     // Convert found orbits to string
-    let string = "";
+    let string = useOldFormula ? "" : "[";
 
     for (let i = 0; i < orbitSets.length; i++) {
 
-        string = string + orbitSets[i].toString() + ", ";
+        string = string + orbitSets[i].toString() + (useOldFormula ? ", " : "], [");
 
     }
+
+    if (!useOldFormula)
+        string = string.substring(0, string.length - 2);
 
     document.getElementById("orbitSets").innerHTML = string.substring(0, string.length - 1);
 
@@ -185,13 +188,15 @@ function generateOrbitSets() {
 
     for (let i = 0; i < orbitSets.length; i++) {
 
-        if (numOrbitEachLength.length < orbitSets[i].orbits.length) {
+        const orbitSetLength = useOldFormula ? orbitSets[i].orbits.length : orbitSets[i].length;
+
+        if (numOrbitEachLength.length < orbitSetLength) {
 
             numOrbitEachLength.push(0);
 
         }
 
-        numOrbitEachLength[orbitSets[i].orbits.length - 1] += 1;
+        numOrbitEachLength[orbitSetLength - 1] += 1;
 
     }
 

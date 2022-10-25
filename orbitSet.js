@@ -250,8 +250,8 @@ class OrbitSet {
     // Generate orbit sets with given attributes
     // Uses algorithm where it generates maximal
     // rotational sets by shifting pre-images.
-    // Finds non-maximal sets by taking all possible
-    // subsets of maximal sets.
+    // Finds non-maximal sets by using injective function
+    // to map each non-maximal set to one maximal set
     // @param:  int sigma
     //          Fraction rotNumber = rotational number wanted for orbits
     // @return: OrbitSet[] list of orbit sets that have given attributes,
